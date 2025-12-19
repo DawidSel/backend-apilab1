@@ -71,7 +71,8 @@ app.get('/', (req, res) => {
       'GET /health': 'Check API status',
       'GET /tasks': 'Get all tasks',
       'POST /tasks': 'Create a new task',
-      'PUT /tasks/:id': 'Update a task'
+      'PUT /tasks/:id': 'Update a task',
+      'DELETE /tasks/:id': 'Delete a task'
     }
   });
 });
@@ -152,6 +153,36 @@ app.put('/tasks/:id', (req, res) => {
   } else {
     res.status(500).json({
       error: 'Failed to update task'
+    });
+  }
+});
+
+// DELETE /tasks/:id
+app.delete('/tasks/:id', (req, res) => {
+  const taskId = parseInt(req.params.id);
+
+  const tasks = readTasks();
+  const taskIndex = tasks.findIndex(task => task.id === taskId);
+
+  if (taskIndex === -1) {
+    return res.status(404).json({
+      error: 'Task not found',
+      id: taskId
+    });
+  }
+
+  // Remove task
+  const deletedTask = tasks[taskIndex];
+  tasks.splice(taskIndex, 1);
+
+  if (writeTasks(tasks)) {
+    res.json({
+      message: 'Task deleted successfully',
+      task: deletedTask
+    });
+  } else {
+    res.status(500).json({
+      error: 'Failed to delete task'
     });
   }
 });
